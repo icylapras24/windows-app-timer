@@ -11,6 +11,9 @@ from win32process import GetWindowThreadProcessId
 import psutil
 import json 
 
+
+print("---Timer for apps in Windows---")
+
 # gets the name of the process ... (https://stackoverflow.com/questions/70574208/get-the-name-of-the-current-opened-application-in-python)
 def get_process_name():
     hwnd = GetForegroundWindow()
@@ -32,7 +35,7 @@ f = open("data_file.json")
 string = f.read() 
 
 # resets the dictionary if wanted
-yes_or_no = input("do you want to reset the timers (y/n): ")
+yes_or_no = input("Do you want to reset the timers (y/n): ")
 if yes_or_no == "y":
     timers_dict = {}
     print("yes"+"\n"+str(timers_dict))
@@ -50,15 +53,18 @@ f.close()
 old_time = round_seconds(datetime.datetime.now())
 active_window = get_process_name()
 new_window = ""
+count = 0
+statement_executed = False
 
 while True:
     new_window = get_process_name()
-    if new_window != active_window:
+    if (new_window != active_window) or (count>=30):
         current_time = round_seconds(datetime.datetime.now()) #current datetime = the datetime now and rounds to nearest second
         
         if active_window not in timers_dict:
             timers_dict.update({active_window: "0:00:00"})
         
+        # getting the time from the dictionary and converting to timedelta
         total_time = timers_dict[active_window]
         total_time = datetime.datetime.strptime(total_time,"%H:%M:%S") # we specify the input and the format...
         total_time = datetime.timedelta(hours=total_time.hour, minutes=total_time.minute, seconds=total_time.second) # ...and use datetime's hour, min and sec properties to build a timedelta
@@ -74,14 +80,17 @@ while True:
                     write_file.write(jsonObject) # writes to JSON file
         
         active_window = new_window
-        
+        statement_executed = True
 
+    if (statement_executed == True): #if the if statement before was executed or it has been 300 seconds (5 minutes) then prints the times along with the curren time
+        print("Time :", datetime.datetime.now().strftime("%H:%M:%S")) #current time in hrs mins and secs
         #prints the dictionary line by line
         for apps,times in timers_dict.items():
             print(apps, ":", times) 
-        print("\n")
-
+        print("\n" + str(psutil.Process(getpid()).memory_info().rss / 1024 ** 2), "MB of RAM", "\n") 
+        statement_executed = False
+        count = 0
+    count +=1
     sleep(10)
 
-"""print(psutil.Process(getpid()).memory_info().rss / 1024 ** 2, "MB of RAM") 
-        print(psutil.cpu_percent(), "CPU")"""
+print(psutil.Process(getpid()).memory_info().rss / 1024 ** 2, "MB of RAM") 
