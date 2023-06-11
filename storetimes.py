@@ -3,7 +3,6 @@
 import json
 import datetime
 
-
 def str_to_timedelta(str_of_timedelta): # input the value of the key and get out a timedelta
     converted_str = datetime.datetime.strptime(str_of_timedelta,"%H:%M:%S") # we specify the input and the format...
     converted_str = datetime.timedelta(hours=converted_str.hour, minutes=converted_str.minute, seconds=converted_str.second) # ...and use datetime's hour, min and sec properties to build a timedelta
@@ -43,25 +42,54 @@ for date in big_log: # checks every "date" in the dictionary big_log
             else: 
                 big_log[date][key] = new_dict[key]
 if date_is_today != True:
-    big_log.update({current_date: new_dict})
+    dict(big_log).update({current_date: new_dict})
 
-print(big_log)
+for i in dict(big_log).items():
+    print(i)
 
+# adds times from all dates if wanted by the user
 choice = input("do you want to see the total use time of all applications in the big log (y/n)")
 if choice == "y":
-    total_dict = {}
-    for date in big_log:
-        for key, value in big_log[date].items():
-            if key in total_dict:
-                total_time = add_to_total(total_dict[key])
-                total_dict.update({key: str(total_time)})
+    total_dict = {} # initialises the dict for this task
+    for date in big_log: # iterates through all the dates
+        for key, value in big_log[date].items(): # gets all the keys and values from a date
+            
+            if key in total_dict: # if a key from this date is already in the total dict
+                total_time = add_to_total(total_dict[key]) # add the time from the value of this key to the total time for that app in the total dict
+                total_dict.update({key: str(total_time)}) # write this new value to the total dict
+            
             else:
-                total_dict[key] = big_log[date][key]
-    print(total_dict)
+                total_dict[key] = big_log[date][key] # makes a new element for the total dict if the app is not in the total dict
+    
+    # turns the dictionary into an array
+    total_list = list(map(list, total_dict.items()))
+    print(total_list)
 
+    for i in range(len(total_list)):
+        total_list[i][1] = str_to_timedelta(total_list[i][1])
+        print(total_list)
+    
+    # sort the list
+    total_list.sort(key=lambda total_list:total_list[1], reverse=True)
+    print(total_list)
+
+    # prints the total dict out
+    for rows, columns in total_list:
+        print(rows, ":", str(columns))
+else:
+    print("no")
 
 
 jsonObject = json.dumps(big_log, indent=4) # converts timers_dict into JSON string
     
 with open("big_log.json", "w") as write_file:
     write_file.write(jsonObject) # writes to JSON file
+
+
+new_log = {}
+jsonObject = json.dumps(new_log, indent=4)
+with open("data_file.json", "w") as clear_file:
+    clear_file.write(jsonObject)
+
+
+# make it so the output is in descending order from longest to shortest times
