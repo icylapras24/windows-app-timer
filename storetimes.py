@@ -1,8 +1,8 @@
-#stores all times into a log, adding the times if there are multiple on the same day
+# stores all times into a log, adding the times if there are multiple on the same day
+# then it caluclates the average use of each application  
 
 import json
 import datetime
-import math 
 
 def str_to_timedelta(str_of_timedelta): # input the value of the key and get out a timedelta
     converted_str = datetime.datetime.strptime(str_of_timedelta,"%H:%M:%S") # we specify the input and the format...
@@ -52,27 +52,26 @@ if __name__ == '__main__':
     # if the current date is not in big_log then do this, otherwise do that
     for date in big_log: # checks every "date" in the dictionary big_log
         if date == current_date: # if it matches the current date
-            date_is_today = True
-            print("date is in database already") 
+            date_is_today = True # date is in database
+
             for key, value in new_dict.items(): 
                 if key in big_log[date]: # if the app is already in the log for that day then add to the value
                     total_time = add_to_total(big_log[date][key])
-                    big_log[date].update({key: str(total_time)})
-                    print("program already in database, added to database")
+                    big_log[date].update({key: str(total_time)}) # program already in database, added to database
+                
                 else: 
-                    big_log[date][key] = new_dict[key]
-                    print("program not in database, making new dictionary for it")
-    if date_is_today != True:
-        dict(big_log).update({current_date: new_dict})
-        print("date is not in database")
-    print(big_log)
-    # adds times from all dates if wanted by the user
+                    big_log[date][key] = new_dict[key] # program not in database, making new dict for it
+
+
+    if date_is_today == False: # date is not in database
+        big_log.update({current_date: new_dict})
+
+
 
     total_dict = {} # initialises the dict for this task
-    print("initailised total_dict")
+
     for date in big_log: # iterates through all the dates
         
-        print("going through dates")
         
         for key, value in big_log[date].items(): # gets all the keys and values from a date
             
@@ -83,11 +82,18 @@ if __name__ == '__main__':
             else:
                 total_dict[key] = big_log[date][key] # makes a new element for the total dict if the app is not in the total dict
     
+
     # turns the dictionary into an array
     total_list = list(map(list, total_dict.items()))
-
     no_of_dates = len(big_log)
 
+    print("\n---PRINTING TOTAL USE OF APPLICATIONS---")
+    for i in range(len(total_list)):
+        print(str(total_list[i][0])+" : " +str(total_list[i][1]))
+
+    print("\n\n\n")
+
+    print("---PRINTING AVERAGES---")
     for i in range(len(total_list)): # converts the array into timedelta and at the same time divides it by the number of dates in big log
         total_list[i][1] = str_to_timedelta(total_list[i][1]) / no_of_dates
         
@@ -132,17 +138,31 @@ if __name__ == '__main__':
         list_of_dates.append(datetime.date.fromisoformat(date)) # creating a list with all the dates 
 
     sorted_list_of_dates = sorted(list_of_dates) # sorts the list of dates in ascending order 
-    date_range = sorted_list_of_dates[-1] - sorted_list_of_dates[1] # takes away the earliest date in the list from the latest date to get a length of time
+    date_range = sorted_list_of_dates[-1] - sorted_list_of_dates[0] # takes away the earliest date in the list from the latest date to get a length of time
     string_range_of_days = str(date_range.days) + " days"
 
-    range_dict = {"RANGE OF DAYS TO CALCULATE AVERAGE" : string_range_of_days}
+    string_number_of_dates = str(len(big_log)) + " days"
+    string_start_date, string_end_date = str(sorted_list_of_dates[0]), str(sorted_list_of_dates[-1])
+
+    start_date_dict, end_date_dict = {"START DATE" : string_start_date}, {"END DATE" : string_end_date}
+
+    range_dict, number_of_dates_dict = {"RANGE OF DAYS TO CALCULATE AVERAGE" : string_range_of_days}, {"NUMBER OF DATES IN big_log.json" : string_number_of_dates}
+
     average_times = dict(total_list)
     average_times.update(range_dict)
+    average_times.update(number_of_dates_dict)
+    average_times.update(start_date_dict)
+    average_times.update(end_date_dict)
     json_object = json.dumps(average_times, indent=4)
     json_range_of_days_dict = json.dumps(range_dict, indent=4)
     with open("average_times.json", "w") as f:
         f.write(json_object)
 
+
+
     print("RANGE OF DAYS TO CALUCLATE AVERAGE : " + string_range_of_days)
+    print("NUMBER OF DATES IN big_log.json : " + string_number_of_dates)
+    print("START DATE : "+ string_start_date)
+    print("END DATE : " + string_end_date)
     # make it so the output is in descending order from longest to shortest times
     

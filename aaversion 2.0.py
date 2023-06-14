@@ -37,31 +37,32 @@ if __name__ == '__main__':
 
     timers_dict = json.loads(string)
     print(timers_dict)
-    # resets the dictionary if wanted
-    yes_or_no = input("Do you want to reset the timers (y/n): ")
-    if yes_or_no == "y":
-        timers_dict = {}
-        print("yes"+"\n"+str(timers_dict))
-    elif yes_or_no == "n":
-        timers_dict = json.loads(string) # turns the json object format thing into a python dictionary
-        print("no")
-        for x, y in timers_dict.items():
-            print(x, ":", y)
-    else:
-        timers_dict = json.loads(string)
-        print("did not enter y/n, timers have not been reset")
+    # resets the dictionary if wanted]
+    if timers_dict != {}: # if the timer isn't already empty
+        yes_or_no = input("Do you want to reset the timers (y/n): ")
+        if yes_or_no == "y":
+            timers_dict = {}
+            print("yes"+"\n"+str(timers_dict))
+        elif yes_or_no == "n":
+            timers_dict = json.loads(string) # turns the json object format thing into a python dictionary
+            print("no")
+            for x, y in timers_dict.items():
+                print(x, ":", y)
+        else:
+            timers_dict = json.loads(string)
+            print("did not enter y/n, timers have not been reset")
     f.close()
 
     # setting up/initialising variables (after the input from the user so the time does not count the time spent answering the input question
 
-    old_time = round_seconds(datetime.datetime.now())
+    old_time, start_time = round_seconds(datetime.datetime.now()), round_seconds(datetime.datetime.now())
     active_window = get_process_name()
     new_window = ""
-    count = 0
-    statement_executed = False
-    start_time = round_seconds(datetime.datetime.now())
+    count = 0 # how many times the whole loop has been done
+    statement_executed = False # for printing the variables in timer when necessary
 
     print(start_time)
+
     while True:
         new_window = get_process_name()
         if (new_window != active_window) or (count>=30):
@@ -96,8 +97,12 @@ if __name__ == '__main__':
             print("")
             statement_executed = False
             count = 0
-            if current_time-start_time >= datetime.timedelta(minutes=30): # displays this message every 30 minutes cuz why not
-                print("\n"+"---30 MINUTES---"+"\n")
+            if current_time-start_time >= datetime.timedelta(minutes=30): # current_time = the datetime recorded at the start of the loop and rounds to nearest second, start_time is the time when the program is started
+                elapsed_time = current_time-start_time
+                elapsed_time_floordiv = elapsed_time // datetime.timedelta(minutes=30) # floor divides the last time to the nearest 30 minutes rounded down
+                roudned_elapsed_time = elapsed_time_floordiv*datetime.timedelta(minutes=30)
+
+                print("\n"+"---"+str(roudned_elapsed_time)+" PASSED---"+"\n")
                 start_time = current_time
         count +=1
         sleep(10)
